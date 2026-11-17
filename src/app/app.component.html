@@ -1,0 +1,57 @@
+<app-login *ngIf="!isLoggedIn" (loginSuccess)="onLogin()"></app-login>
+
+<div id="app" *ngIf="isLoggedIn">
+  <header class="top">
+    <div class="brand">
+      <span class="logo sm">GRAP</span>
+      <b>SOP Management</b>
+    </div>
+    <input class="gsearch" placeholder="🔍 Search SOP name or ID">
+    <button class="icon" (click)="showNotif = !showNotif" title="Notifications">
+      🔔<span class="dot" id="ncount">3</span>
+    </button>
+    <div class="who">
+      <b id="uname">{{sopService.currentUser.name}}</b>
+      <span class="pill role" id="urole">{{sopService.currentUser.role}}</span>
+    </div>
+    <button class="btn sm" (click)="onSignOut()">Sign out</button>
+  </header>
+
+  <div id="notif" class="notif" *ngIf="showNotif">
+    <b>Notifications</b>
+    <div>📥 <b>Legal Notice Handling v2</b> resubmitted by Anu Jha · 10 min ago</div>
+    <div>✏️ <b>ATM Cash Shortage</b>: modification requested · 2 h ago</div>
+    <div>✅ <b>Credit Card Dispute v3</b> approved & published · yesterday</div>
+  </div>
+
+  <main>
+    <app-listing 
+      *ngIf="currentPage === 'list'" 
+      (navigate)="onNavigate($event)">
+    </app-listing>
+
+    <app-add-edit-sop 
+      *ngIf="currentPage === 'form'" 
+      [editId]="editId"
+      (back)="currentPage = 'list'"
+      (notify)="showToast($event)">
+    </app-add-edit-sop>
+
+    <app-review-sop 
+      *ngIf="currentPage === 'review'" 
+      [id]="editId!" 
+      [canAct]="canReview"
+      (back)="currentPage = 'list'"
+      (notify)="showToast($event)"
+      (openActivity)="onNavigate({page: 'activity', id: $event})">
+    </app-review-sop>
+  </main>
+
+  <app-activity-timeline 
+    *ngIf="activityId" 
+    [id]="activityId" 
+    (close)="activityId = null">
+  </app-activity-timeline>
+
+  <div class="toast" [class.show]="toastMsg">{{toastMsg}}</div>
+</div>

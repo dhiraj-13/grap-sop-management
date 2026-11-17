@@ -1,0 +1,75 @@
+<section id="v-list">
+  <div class="hello">
+    <div>
+      <h2 id="greet">Good morning, {{sopService.currentUser.name.split(' ')[0]}}</h2>
+      <p class="muted" id="sub" *ngIf="sopService.currentUser.role === 'Reviewer'">
+        You have <b id="pendc">{{reviewList.length}}</b> SOPs waiting for your review.
+      </p>
+    </div>
+    <button class="btn pri" id="add-sop-btn" (click)="openAdd()">+ Add SOP</button>
+  </div>
+
+  <div class="kpis" id="kpis">
+    <div class="kpi" *ngFor="let k of kpis" (click)="kpiClick(k)" [id]="getKpiId(k.label)">
+      <div class="l">{{k.label}}</div>
+      <div class="v">{{k.val}}</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="tabs" id="tabs">
+      <button [class.on]="tab === 'mine'" (click)="tab = 'mine'" id="tab-mine">My SOPs <span class="cnt">{{mineList.length}}</span></button>
+      <button *ngIf="sopService.currentUser.role === 'Reviewer'" [class.on]="tab === 'review'" (click)="tab = 'review'" id="tab-review">For My Review <span class="cnt">{{reviewList.length}}</span></button>
+    </div>
+
+    <div class="filters">
+      <select id="fcat" [(ngModel)]="selectedCategory">
+        <option value="">All categories</option>
+        <option *ngFor="let c of categories" [value]="c">{{c}}</option>
+      </select>
+      <select id="fst" [(ngModel)]="selectedStatus">
+        <option value="">All statuses</option>
+        <option *ngFor="let st of statuses" [value]="st">{{st}}</option>
+      </select>
+      <span class="muted" id="cnt">{{filteredRows.length}} SOP(s)</span>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>SOP</th>
+          <th>Version</th>
+          <th>Category / Sub-category</th>
+          <th>Status</th>
+          <th>Uploaded by</th>
+          <th>Last updated</th>
+          <th style="text-align:right">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="rows">
+        <tr *ngFor="let s of filteredRows" [id]="'row-' + s.id">
+          <td><b>{{s.n}}</b><div class="hint mono">{{s.id}}</div></td>
+          <td>v{{s.v}}</td>
+          <td>{{s.c}}<div class="hint">{{s.s2}}</div></td>
+          <td><span [class]="badgeClass(s.st)">{{s.st}}</span></td>
+          <td>{{s.byn}}</td>
+          <td>{{s.up}}</td>
+          <td class="ra">
+            <button class="btn sm" [id]="'view-btn-' + s.id" (click)="openView(s.id)">View</button>
+            <button class="btn sm" [id]="'act-btn-' + s.id" (click)="openActivity(s.id)">Activity</button>
+            <button class="btn sm" *ngIf="tab === 'mine' && (s.st === 'Draft' || s.st === 'Modification In Progress')" [id]="'edit-btn-' + s.id" (click)="openEdit(s.id)">Edit</button>
+            <button class="btn sm warn" *ngIf="tab === 'mine' && s.st === 'Requested Modification'" [id]="'makechg-btn-' + s.id" (click)="makeChanges(s.id)">Make changes</button>
+            <button class="btn sm pri" *ngIf="tab === 'review'" [id]="'rev-btn-' + s.id" (click)="openReview(s.id)">Review</button>
+          </td>
+        </tr>
+        <tr *ngIf="filteredRows.length === 0">
+          <td colspan="7">
+            <div class="empty">
+              {{tab === 'review' ? '🎉 Nothing waiting for your review.' : 'No SOPs yet. Click + Add SOP to upload your first one.'}}
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

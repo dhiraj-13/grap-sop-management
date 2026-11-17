@@ -1,0 +1,71 @@
+.top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 22px;
+  background: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  font-size: 15px;
+}
+
+.gsearch {
+  margin-left: 24px;
+  flex: 1;
+  max-width: 380px;
+}
+
+.who {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon {
+  position: relative;
+  border: 0;
+  background: none;
+  font-size: 17px;
+  cursor: pointer;
+}
+
+.dot {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  background: var(--color-error);
+  color: #fff;
+  font-size: 10px;
+  border-radius: 10px;
+  padding: 0 5px;
+}
+
+.notif {
+  position: absolute;
+  right: 120px;
+  top: 52px;
+  width: 340px;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: 12px;
+  z-index: 5;
+}
+
+.notif div {
+  padding: 8px 0;
+  border-top: 1px solid var(--color-border-light);
+  font-size: 12px;
+}
+
+main {
+  padding: 20px 24px;
+  max-width: 1280px;
+  margin: 0 auto;
+}

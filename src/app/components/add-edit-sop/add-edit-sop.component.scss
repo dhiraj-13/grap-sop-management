@@ -1,0 +1,91 @@
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.banner {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+  border: 1px solid var(--color-warning-border);
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.card {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+.drop {
+  border: 2px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  padding: 28px;
+  text-align: center;
+  cursor: pointer;
+  background: var(--color-surface);
+}
+
+.drop:hover {
+  border-color: var(--color-primary);
+}
+
+.dicon {
+  font-size: 28px;
+}
+
+.drop.ok {
+  border-style: solid;
+  border-color: var(--color-success-border);
+  background: var(--color-success-bg);
+}
+
+.preview, .doc {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  padding: 16px;
+  min-height: 220px;
+  font-size: 12px;
+}
+
+.doc h4 {
+  margin: 0 0 8px;
+}
+
+.doc p {
+  margin: 6px 0;
+}
+
+.acts {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.sugg {
+  margin-top: 12px;
+  font-size: 12px;
+  background: var(--color-info-bg);
+  color: var(--color-info-text);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+}
+
+.row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}

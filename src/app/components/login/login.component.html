@@ -1,0 +1,13 @@
+<div class="login" id="login-container">
+  <div class="lcard">
+    <div class="logo" id="logo-grap">GRAP</div>
+    <h1>SOP Management</h1>
+    <p class="muted">Grievance Resolution Automation Program · Axis Bank</p>
+    <button class="btn pri big" id="signin-btn" (click)="signIn()">🔐 Sign in with Axis SSO</button>
+    <p class="hint">Use your bank Microsoft account. No separate password needed.</p>
+    <div class="demo" id="demo-persona">Demo persona:
+      <label><input type="radio" name="per" value="Maker" [(ngModel)]="selectedPersona" id="radio-maker"> Maker</label>
+      <label><input type="radio" name="per" value="Reviewer" [(ngModel)]="selectedPersona" id="radio-reviewer"> Reviewer</label>
+    </div>
+  </div>
+</div>

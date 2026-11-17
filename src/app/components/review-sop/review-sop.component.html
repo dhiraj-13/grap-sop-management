@@ -1,0 +1,77 @@
+<section id="v-review">
+  <div class="bar">
+    <button class="btn sm" id="review-back-btn" (click)="back.emit()">← Back</button>
+    <h2 id="rtitle">{{cur.n}} · v{{cur.v}}</h2>
+    <span id="rbadge" class="pill" [ngClass]="'st-' + cur.st.split(' ')[0]">{{cur.st}}</span>
+  </div>
+
+  <div class="stepper" id="stepper">
+    <div class="step" *ngFor="let s of flow; let i = index" 
+         [class.done]="i < currentStepIndex" 
+         [class.cur]="i === currentStepIndex">
+      <div class="c">{{ i < currentStepIndex ? '✓' : i + 1 }}</div>
+      {{s}}
+    </div>
+  </div>
+
+  <div class="grid2 rev">
+    <div class="card">
+      <div class="tabs small">
+        <button [class.on]="docTab === 'doc'" (click)="docTab = 'doc'" id="t-doc">Document</button>
+        <button [class.on]="docTab === 'cmp'" (click)="docTab = 'cmp'" id="t-cmp">Compare with previous version</button>
+      </div>
+      <div id="docpane">
+        <div class="doc" *ngIf="docTab === 'doc'">
+          <h4>📄 {{cur.n}}</h4>
+          <p><b>1. Purpose</b> – Defines how grievances of this type are handled end to end.</p>
+          <p><b>2. Scope</b> – Applies to Nodal, CNO, PNO and MD desks.</p>
+          <p><b>3. Steps</b> – Verify customer · Fetch transaction · Check TAT · Draft response.</p>
+          <p><b>4. Escalation matrix</b> – L1 Team Lead · L2 Unit Head.</p>
+          <p class="hint">Page 1 of 6 · document preview</p>
+        </div>
+        <div class="doc" *ngIf="docTab === 'cmp'">
+          <div *ngIf="cur.v < 2" class="empty">This is version 1 – there is no previous version to compare.</div>
+          <div *ngIf="cur.v >= 2">
+            <h4>v{{cur.v-1}} → v{{cur.v}}</h4>
+            <p><b>3. Steps</b> – Verify customer · Fetch transaction · Check TAT <span class="del">within 45 days</span> <span class="ins">within 30 days</span> · Draft response.</p>
+            <p><b>4. Escalation matrix</b> – L1 Team Lead · L2 Unit Head <span class="ins">· L3 Zonal Head</span></p>
+            <p class="hint">💡 Suggested feature: highlights what changed between versions so the reviewer only checks the changes.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="kv" id="kv">
+        <b>SOP ID</b><span class="mono">{{cur.id}}</span>
+        <b>Version</b><span>v{{cur.v}}</span>
+        <b>Category</b><span>{{cur.c}} › {{cur.s2}}</span>
+        <b>Uploaded by</b><span>{{cur.byn}}</span>
+        <b>Last updated</b><span>{{cur.up}}</span>
+        <b>Comments</b><span>{{cur.v > 1 ? 'Updated TAT and escalation matrix as discussed.' : 'First version of this SOP.'}}</span>
+      </div>
+
+      <div id="revactions" *ngIf="canAct">
+        <label class="f">Remarks <span class="hint">(mandatory for Request Modification and Reject)</span></label>
+        <textarea id="rem" [(ngModel)]="remarks" placeholder="Add your review remarks…"></textarea>
+        
+        <div class="sugg">
+          💡 <b>Suggestion:</b> quick-pick remarks – 
+          <a href="javascript:void(0)" (click)="addR('Please add the escalation matrix.')">Escalation matrix missing</a> · 
+          <a href="javascript:void(0)" (click)="addR('TAT does not match the CTST master.')">TAT mismatch</a> · 
+          <a href="javascript:void(0)" (click)="addR('Please attach the latest template.')">Template outdated</a>
+        </div>
+        
+        <div class="acts">
+          <button class="btn danger" id="reject-btn" (click)="decide('Rejected')">Reject</button>
+          <button class="btn warn" id="req-mod-btn" (click)="decide('Requested Modification')">Request modification</button>
+          <button class="btn pri" id="approve-btn" (click)="decide('Approved')">Approve & publish</button>
+        </div>
+      </div>
+      
+      <div *ngIf="!canAct">
+        <button class="btn" id="view-act-btn" (click)="openActivity.emit(cur.id)">View activity</button>
+      </div>
+    </div>
+  </div>
+</section>

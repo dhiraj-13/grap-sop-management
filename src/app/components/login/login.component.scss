@@ -1,0 +1,35 @@
+.login {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+}
+
+.lcard {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 36px 40px;
+  text-align: center;
+  width: 420px;
+}
+
+.big {
+  width: 100%;
+  padding: 12px;
+  font-size: 14px;
+  margin: 22px 0 8px;
+}
+
+.demo {
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--color-border);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}

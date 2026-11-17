@@ -1,0 +1,84 @@
+<section id="v-form">
+  <div class="bar">
+    <button class="btn sm" id="form-back-btn" (click)="back.emit()">← Back</button>
+    <h2 id="ftitle">{{ editId ? 'Edit SOP – ' + editId : 'Add SOP' }}</h2>
+  </div>
+
+  <div class="banner" *ngIf="currentSop && currentSop.remark">
+    ✏️ <b>Reviewer remarks from {{currentSop.rby}} :</b> {{currentSop.remark}}
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <label class="f">SOP file *</label>
+      
+      <!-- Hidden file input for real OS file picker -->
+      <input type="file" #fileInput style="display: none" accept=".pdf,.doc,.docx" (change)="onFileSelected($event)">
+
+      <div class="drop" id="drop" (click)="fileInput.click()" (dragover)="$event.preventDefault()" (drop)="onFileDropped($event)" [class.ok]="upFileName">
+        <div class="dicon">{{ upFileName ? '✅' : '📄' }}</div>
+        <b>{{ upFileName ? upFileName : 'Drag & drop or click to upload' }}</b>
+        <div class="hint">{{ upFileSize ? (upFileSize + ' · Click to replace') : 'Word (.doc, .docx) or PDF · max 10MB' }}</div>
+      </div>
+      <div id="ferr" class="err">{{ ferr }}</div>
+      
+      <label class="f" style="margin-top:14px">Preview</label>
+      <div class="preview" id="pv">
+        <!-- If PDF, render actual PDF viewer iframe -->
+        <div *ngIf="pdfUrl; else docpreview" style="width:100%; height:280px;">
+          <iframe [src]="pdfUrl" style="width:100%; height:100%; border:none; border-radius:4px;"></iframe>
+        </div>
+        
+        <!-- If Word or general fallback -->
+        <ng-template #docpreview>
+          <div class="doc" *ngIf="upFileName; else nopreview">
+            <h4>📄 {{ sopForm.get('name')?.value || upFileName }}</h4>
+            <p><b>File Type:</b> .{{ upFileType || 'doc/docx' }}</p>
+            <p><b>1. Purpose</b> – Defines how grievances of this type are handled end to end.</p>
+            <p><b>2. Scope</b> – Applies to Nodal, CNO, PNO and MD desks.</p>
+            <p><b>3. Steps</b> – Verify customer · Fetch transaction · Check TAT · Draft response.</p>
+            <p class="hint">Real client-side file loaded successfully · Ready for submission</p>
+          </div>
+          <ng-template #nopreview>
+            <span class="muted">Upload a file to see the preview.</span>
+          </ng-template>
+        </ng-template>
+      </div>
+    </div>
+
+    <div class="card" [formGroup]="sopForm">
+      <label class="f">SOP name *</label>
+      <input id="fname" formControlName="name" placeholder="e.g. UPI Failed Transaction Refund">
+      <div class="err" *ngIf="sopForm.get('name')?.invalid && sopForm.get('name')?.touched">SOP name is required</div>
+
+      <div class="row2">
+        <div>
+          <label class="f">Category *</label>
+          <select id="fcat2" formControlName="category" (change)="onCategoryChange()">
+            <option *ngFor="let c of categories" [value]="c">{{c}}</option>
+          </select>
+        </div>
+        <div>
+          <label class="f">Sub-category *</label>
+          <select id="fsub" formControlName="subCategory">
+            <option *ngFor="let sub of subcategories" [value]="sub">{{sub}}</option>
+          </select>
+        </div>
+      </div>
+
+      <label class="f">Version</label>
+      <input id="fver" [value]="versionText" disabled>
+
+      <label class="f">Comments</label>
+      <textarea id="fcom" formControlName="comments" placeholder="What does this SOP cover? Anything the reviewer should know?"></textarea>
+      
+      <div class="sugg">💡 <b>Suggestion:</b> a short "What changed" note is auto-required when uploading a new version, so reviewers can focus on the changes.</div>
+      
+      <div class="acts">
+        <button class="btn" id="form-cancel-btn" (click)="back.emit()">Cancel</button>
+        <button class="btn" id="form-draft-btn" (click)="save('Draft')">Save as draft</button>
+        <button class="btn pri" id="form-submit-btn" (click)="save('submit')">Save & Submit</button>
+      </div>
+    </div>
+  </div>
+</section>
