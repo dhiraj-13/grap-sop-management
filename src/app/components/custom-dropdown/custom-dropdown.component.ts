@@ -41,6 +41,8 @@ export class CustomDropdownComponent implements OnInit, OnDestroy, ControlValueA
   searchTerm = '';
   filteredOptions: DropdownOption[] = [];
   highlightedIndex = -1;
+  value: any = null; // Internal value state
+
   private onChange: (value: any) => void = () => {};
   private onTouched: () => void = () => {};
 
@@ -96,15 +98,17 @@ export class CustomDropdownComponent implements OnInit, OnDestroy, ControlValueA
 
   selectOption(option: DropdownOption) {
     if (option.disabled) return;
-    this.onChange(option.value);
-    this.selectionChange.emit(option.value);
+    this.value = option.value;
+    this.onChange(this.value);
+    this.selectionChange.emit(this.value);
     this.close();
   }
 
   clearSelection(event: MouseEvent) {
     event.stopPropagation();
-    this.onChange(null);
-    this.selectionChange.emit(null);
+    this.value = null;
+    this.onChange(this.value);
+    this.selectionChange.emit(this.value);
     this.close();
   }
 
@@ -126,8 +130,6 @@ export class CustomDropdownComponent implements OnInit, OnDestroy, ControlValueA
   }
 
   // ControlValueAccessor implementation
-  value: any = null;
-
   writeValue(value: any): void {
     this.value = value;
   }
