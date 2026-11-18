@@ -96,39 +96,43 @@
 
     <!-- Pagination -->
     <div class="pagination" *ngIf="totalPages > 1">
-      <button class="btn sm" (click)="prevPage()" [disabled]="currentPage === 1" aria-label="Previous page">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="15 18 9 12 15 6"></polyline>
-        </svg>
-      </button>
+      <div class="pagination-left">
+        <span class="page-info">{{filteredRows.length}} items · Page {{currentPage}} of {{totalPages}}</span>
+      </div>
       
-      <span class="page-info">Page {{currentPage}} of {{totalPages}}</span>
-      
-      <div class="page-numbers">
-        <button 
-          class="btn sm page-btn" 
-          *ngFor="let page of getPageNumbers()" 
-          [class.active]="page === currentPage"
-          (click)="goToPage(page)"
-          [attr.aria-label]="'Page ' + page">
-          {{page}}
+      <div class="pagination-center">
+        <button class="btn sm page-nav" (click)="prevPage()" [disabled]="currentPage === 1" aria-label="Previous page">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        
+        <div class="page-numbers">
+          <button
+            class="btn sm page-btn"
+            *ngFor="let page of getPageNumbers()"
+            [class.active]="page === currentPage"
+            (click)="goToPage(page)"
+            [attr.aria-label]="'Page ' + page">
+            {{page}}
+          </button>
+        </div>
+        
+        <button class="btn sm page-nav" (click)="nextPage()" [disabled]="currentPage === totalPages" aria-label="Next page">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
         </button>
       </div>
       
-      <span class="page-info">{{filteredRows.length}} items</span>
-      
-      <select class="page-size-select" [(ngModel)]="pageSize" (change)="onPageSizeChange()" aria-label="Items per page">
-        <option value="5">5 per page</option>
-        <option value="10">10 per page</option>
-        <option value="25">25 per page</option>
-        <option value="50">50 per page</option>
-      </select>
-      
-      <button class="btn sm" (click)="nextPage()" [disabled]="currentPage === totalPages" aria-label="Next page">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="9 18 15 12 9 6"></polyline>
-        </svg>
-      </button>
+      <div class="pagination-right">
+        <select class="page-size-select" [(ngModel)]="pageSize" (change)="onPageSizeChange()" aria-label="Items per page">
+          <option value="5">5 per page</option>
+          <option value="10">10 per page</option>
+          <option value="25">25 per page</option>
+          <option value="50">50 per page</option>
+        </select>
+      </div>
     </div>
   </div>
 </section>
