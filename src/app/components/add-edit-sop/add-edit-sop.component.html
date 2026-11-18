@@ -34,10 +34,15 @@
           <div class="doc" *ngIf="upFileName; else nopreview">
             <h4>📄 {{ sopForm.get('name')?.value || upFileName }}</h4>
             <p><b>File Type:</b> .{{ upFileType || 'doc/docx' }}</p>
-            <p><b>1. Purpose</b> – Defines how grievances of this type are handled end to end.</p>
-            <p><b>2. Scope</b> – Applies to Nodal, CNO, PNO and MD desks.</p>
-            <p><b>3. Steps</b> – Verify customer · Fetch transaction · Check TAT · Draft response.</p>
-            <p class="hint">Real client-side file loaded successfully · Ready for submission</p>
+            <div class="doc-content" *ngIf="upFileContent; else genericPreview">
+              <!-- For Word docs, show a message that preview is limited -->
+              <p class="hint">Word document preview is not available in browser. The file has been uploaded and stored successfully.</p>
+              <p class="hint">File size: {{ upFileSize }}</p>
+              <p class="hint">Ready for submission</p>
+            </div>
+            <ng-template #genericPreview>
+              <p class="hint">Upload a file to see the preview.</p>
+            </ng-template>
           </div>
           <ng-template #nopreview>
             <span class="muted">Upload a file to see the preview.</span>

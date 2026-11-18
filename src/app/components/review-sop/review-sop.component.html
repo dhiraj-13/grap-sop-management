@@ -22,12 +22,30 @@
       </div>
       <div id="docpane">
         <div class="doc" *ngIf="docTab === 'doc'">
-          <h4>📄 {{cur.n}}</h4>
-          <p><b>1. Purpose</b> – Defines how grievances of this type are handled end to end.</p>
-          <p><b>2. Scope</b> – Applies to Nodal, CNO, PNO and MD desks.</p>
-          <p><b>3. Steps</b> – Verify customer · Fetch transaction · Check TAT · Draft response.</p>
-          <p><b>4. Escalation matrix</b> – L1 Team Lead · L2 Unit Head.</p>
-          <p class="hint">Page 1 of 6 · document preview</p>
+          <!-- If PDF, render actual PDF viewer iframe -->
+          <div *ngIf="pdfUrl; else docpreview" style="width:100%; height:280px;">
+            <iframe [src]="pdfUrl" style="width:100%; height:100%; border:none; border-radius:4px;"></iframe>
+          </div>
+          
+          <!-- If Word or general fallback -->
+          <ng-template #docpreview>
+            <div *ngIf="upFileName; else nopreview">
+              <h4>📄 {{cur.n}}</h4>
+              <p><b>File Type:</b> .{{ upFileType || 'doc/docx' }}</p>
+              <div class="doc-content" *ngIf="upFileContent; else genericPreview">
+                <!-- For Word docs, show a message that preview is limited -->
+                <p class="hint">Word document preview is not available in browser. The file has been uploaded and stored successfully.</p>
+                <p class="hint">File size: {{ upFileSize }}</p>
+                <p class="hint">Ready for review</p>
+              </div>
+              <ng-template #genericPreview>
+                <p class="hint">File content not available for preview.</p>
+              </ng-template>
+            </div>
+            <ng-template #nopreview>
+              <span class="muted">No file uploaded for this SOP.</span>
+            </ng-template>
+          </ng-template>
         </div>
         <div class="doc" *ngIf="docTab === 'cmp'">
           <div *ngIf="cur.v < 2" class="empty">This is version 1 – there is no previous version to compare.</div>

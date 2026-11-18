@@ -5,6 +5,8 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { SopService, Sop } from '../../services/sop.service';
 import { CustomDropdownComponent, DropdownOption } from '../custom-dropdown/custom-dropdown.component';
 
+const FILE_STORAGE_KEY = 'grap_sop_files';
+
 @Component({
   selector: 'app-add-edit-sop',
   standalone: true,
@@ -29,6 +31,7 @@ export class AddEditSopComponent implements OnInit {
   upFileName: string | null = null;
   upFileSize: string | null = null;
   upFileType: string | null = null;
+  upFileContent: string | null = null; // base64 content
   pdfUrl: SafeResourceUrl | null = null;
   ferr: string = '';
   
@@ -36,7 +39,7 @@ export class AddEditSopComponent implements OnInit {
   versionText: string = 'v1';
 
   constructor(
-    private fb: FormBuilder, 
+    private fb: FormBuilder,
     public sopService: SopService,
     private sanitizer: DomSanitizer
   ) {}
@@ -69,6 +72,9 @@ export class AddEditSopComponent implements OnInit {
         let nv = this.currentSop.st === 'Draft' ? this.currentSop.v : this.currentSop.v + 1;
         this.versionText = 'v' + nv + (this.currentSop.st !== 'Draft' ? ' (new version)' : '');
         this.upFileName = this.currentSop.fileName || 'document.pdf';
+        
+        // Load stored file content for preview
+        this.loadStoredFile(this.currentSop.id);
       }
     }
   }
@@ -125,16 +131,63 @@ export class AddEditSopComponent implements OnInit {
     this.upFileSize = (file.size / 1024 / 1024).toFixed(2) + ' MB';
     this.upFileType = ext;
 
-    if (ext === 'pdf') {
-      const blobUrl = URL.createObjectURL(file);
-      this.pdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(blobUrl);
-    } else {
-      this.pdfUrl = null;
-    }
+    // Read file as base64 for storage
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      this.upFileContent = e.target.result;
+      this.loadPreview();
+    };
+    reader.readAsDataURL(file);
 
     if (!this.sopForm.get('name')?.value) {
       const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "").replace(/_/g, ' ');
       this.sopForm.patchValue({ name: nameWithoutExt });
+    }
+  }
+
+  loadPreview() {
+    if (this.upFileType === 'pdf' && this.upFileContent) {
+      this.pdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.upFileContent);
+    } else {
+      this.pdfUrl = null;
+    }
+  }
+
+  // Load stored file content from localStorage
+  loadStoredFile(sopId: string) {
+    try {
+      const stored = localStorage.getItem(FILE_STORAGE_KEY);
+      if (stored) {
+        const files = JSON.parse(stored);
+        if (files[sopId]) {
+          this.upFileContent = files[sopId].content;
+          this.upFileName = files[sopId].name;
+          this.upFileType = files[sopId].type;
+          this.upFileSize = files[sopId].size;
+          this.loadPreview();
+        }
+      }
+    } catch (e) {
+      console.error('Error loading stored file:', e);
+    }
+  }
+
+  // Save file content to localStorage
+  saveStoredFile(sopId: string) {
+    if (!this.upFileContent || !this.upFileName) return;
+    
+    try {
+      const stored = localStorage.getItem(FILE_STORAGE_KEY);
+      const files = stored ? JSON.parse(stored) : {};
+      files[sopId] = {
+        content: this.upFileContent,
+        name: this.upFileName,
+        type: this.upFileType,
+        size: this.upFileSize
+      };
+      localStorage.setItem(FILE_STORAGE_KEY, JSON.stringify(files));
+    } catch (e) {
+      console.error('Error saving file to localStorage:', e);
     }
   }
 
@@ -168,11 +221,15 @@ export class AddEditSopComponent implements OnInit {
           this.currentSop.fileName = this.upFileName;
         }
         this.sopService.updateSop(this.currentSop);
+        // Save file content to localStorage
+        this.saveStoredFile(this.currentSop.id);
         this.notify.emit('Saved as draft');
       } else {
         // Use performAction for proper workflow
         const success = this.sopService.performAction(this.currentSop.id, action as any, val.comments);
         if (success) {
+          // Save file content to localStorage for non-draft actions too
+          this.saveStoredFile(this.currentSop.id);
           this.notify.emit(mode === 'Draft' ? 'Saved as draft' : `Sent for review as ${this.currentSop?.st}`);
         }
       }
@@ -204,6 +261,8 @@ export class AddEditSopComponent implements OnInit {
           }]
         };
         this.sopService.addSop(newSop);
+        // Save file content to localStorage
+        this.saveStoredFile(newSop.id);
         this.notify.emit('Saved as draft');
       } else {
         const newSop: Sop = {
@@ -243,6 +302,8 @@ export class AddEditSopComponent implements OnInit {
           ]
         };
         this.sopService.addSop(newSop);
+        // Save file content to localStorage
+        this.saveStoredFile(newSop.id);
         this.notify.emit('SOP submitted for review');
       }
     }

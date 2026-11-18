@@ -64,6 +64,92 @@
   margin: 6px 0;
 }
 
+.doc-content {
+  color: var(--color-text-secondary);
+}
+
+.doc-content .hint {
+  margin: 8px 0;
+  font-size: 12px;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .grid2.rev {
+    grid-template-columns: 1fr;
+  }
+  
+  .doc {
+    min-height: 200px;
+    padding: 12px;
+  }
+  
+  .stepper {
+    padding: 10px 12px;
+  }
+  
+  .step {
+    min-width: 80px;
+    font-size: 10px;
+  }
+  
+  .kv {
+    grid-template-columns: 100px 1fr;
+    gap: 6px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .doc {
+    min-height: 180px;
+    padding: 10px;
+    font-size: 11px;
+  }
+  
+  .bar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .bar h2 {
+    font-size: 16px;
+  }
+  
+  .step {
+    min-width: 70px;
+    font-size: 9px;
+  }
+  
+  .step .c {
+    width: 18px;
+    height: 18px;
+    line-height: 14px;
+    font-size: 9px;
+  }
+  
+  .kv {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  
+  .kv b {
+    margin-bottom: 2px;
+  }
+  
+  .tabs.small button {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+  
+  .acts {
+    flex-direction: column;
+  }
+  
+  .acts button {
+    width: 100%;
+  }
+}
+
 .ins {
   background: var(--color-success-bg);
 }

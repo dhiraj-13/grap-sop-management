@@ -2,6 +2,9 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SopService, Sop } from '../../services/sop.service';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+
+const FILE_STORAGE_KEY = 'grap_sop_files';
 
 @Component({
   selector: 'app-review-sop',
@@ -21,11 +24,45 @@ export class ReviewSopComponent implements OnInit {
   docTab: 'doc' | 'cmp' = 'doc';
   remarks: string = '';
   flow = ['Draft', 'Submitted', 'Requested Modification', 'Modification In Progress', 'Resubmitted', 'Approved / Rejected'];
+  
+  // File preview state
+  pdfUrl: SafeResourceUrl | null = null;
+  upFileContent: string | null = null;
+  upFileType: string | null = null;
+  upFileName: string | null = null;
+  upFileSize: string | null = null;
 
-  constructor(public sopService: SopService) {}
+  constructor(public sopService: SopService, private sanitizer: DomSanitizer) {}
 
   ngOnInit() {
     this.cur = this.sopService.getSopById(this.id)!;
+    this.loadStoredFile(this.cur.id);
+  }
+
+  loadStoredFile(sopId: string) {
+    try {
+      const stored = localStorage.getItem(FILE_STORAGE_KEY);
+      if (stored) {
+        const files = JSON.parse(stored);
+        if (files[sopId]) {
+          this.upFileContent = files[sopId].content;
+          this.upFileName = files[sopId].name;
+          this.upFileType = files[sopId].type;
+          this.upFileSize = files[sopId].size;
+          this.loadPreview();
+        }
+      }
+    } catch (e) {
+      console.error('Error loading stored file:', e);
+    }
+  }
+
+  loadPreview() {
+    if (this.upFileType === 'pdf' && this.upFileContent) {
+      this.pdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.upFileContent);
+    } else {
+      this.pdfUrl = null;
+    }
   }
 
   get currentStepIndex(): number {
