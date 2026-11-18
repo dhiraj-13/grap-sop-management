@@ -6,10 +6,17 @@
   </div>
 
   <div class="stepper" id="stepper">
-    <div class="step" *ngFor="let s of flow; let i = index" 
-         [class.done]="i < currentStepIndex" 
-         [class.cur]="i === currentStepIndex">
-      <div class="c">{{ i < currentStepIndex ? '✓' : i + 1 }}</div>
+    <div class="step" *ngFor="let s of flow; let i = index"
+         [class.done]="flowStatus[i] === 'completed'"
+         [class.cur]="flowStatus[i] === 'current'"
+         [class.pending]="flowStatus[i] === 'pending'"
+         [class.skipped]="flowStatus[i] === 'skipped'">
+      <div class="c">
+        <span *ngIf="flowStatus[i] === 'completed'">✓</span>
+        <span *ngIf="flowStatus[i] === 'current'">{{ i + 1 }}</span>
+        <span *ngIf="flowStatus[i] === 'pending'">{{ i + 1 }}</span>
+        <span *ngIf="flowStatus[i] === 'skipped'">—</span>
+      </div>
       {{s}}
     </div>
   </div>
