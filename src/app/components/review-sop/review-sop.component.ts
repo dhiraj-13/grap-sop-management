@@ -4,8 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { SopService, Sop } from '../../services/sop.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ModalService } from '../modal/modal.service';
-
-const FILE_STORAGE_KEY = 'grap_sop_files';
+import { FileStorageService } from '../../shared/file-storage.service';
 
 @Component({
   selector: 'app-review-sop',
@@ -36,7 +35,12 @@ export class ReviewSopComponent implements OnInit {
   flow: string[] = [];
   flowStatus: ('completed' | 'current' | 'pending' | 'skipped')[] = [];
 
-  constructor(public sopService: SopService, private sanitizer: DomSanitizer, private modalService: ModalService) {}
+  constructor(
+    public sopService: SopService, 
+    private sanitizer: DomSanitizer, 
+    private modalService: ModalService,
+    private fileStorage: FileStorageService
+  ) {}
 
   ngOnInit() {
     this.cur = this.sopService.getSopById(this.id)!;
@@ -129,26 +133,19 @@ export class ReviewSopComponent implements OnInit {
   }
 
   loadStoredFile(sopId: string) {
-    try {
-      const stored = localStorage.getItem(FILE_STORAGE_KEY);
-      if (stored) {
-        const files = JSON.parse(stored);
-        if (files[sopId]) {
-          this.upFileContent = files[sopId].content;
-          this.upFileName = files[sopId].name;
-          this.upFileType = files[sopId].type;
-          this.upFileSize = files[sopId].size;
-          this.loadPreview();
-        }
-      }
-    } catch (e) {
-      console.error('Error loading stored file:', e);
+    const file = this.fileStorage.loadStoredFile(sopId);
+    if (file) {
+      this.upFileContent = file.content;
+      this.upFileName = file.name;
+      this.upFileType = file.type;
+      this.upFileSize = file.size;
+      this.loadPreview();
     }
   }
 
   loadPreview() {
-    if (this.upFileType === 'pdf' && this.upFileContent) {
-      this.pdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.upFileContent);
+    if (this.fileStorage.isPdf(this.upFileType) && this.upFileContent) {
+      this.pdfUrl = this.fileStorage.createPdfUrl(this.upFileContent);
     } else {
       this.pdfUrl = null;
     }
@@ -166,10 +163,10 @@ export class ReviewSopComponent implements OnInit {
     
     const config = {
       title: d === 'Approved' ? 'Approve SOP' : d === 'Rejected' ? 'Reject SOP' : 'Request Modification',
-      message: d === 'Approved'
-        ? 'Approve and publish this SOP to the knowledge base?'
-        : d === 'Rejected'
-          ? 'Reject this SOP? This action cannot be undone.'
+      message: d === 'Approved' 
+        ? 'Approve and publish this SOP to the knowledge base?' 
+        : d === 'Rejected' 
+          ? 'Reject this SOP? This action cannot be undone.' 
           : 'Send back to the creator for changes?',
       type: 'confirm' as const,
       confirmText: d === 'Approved' ? 'Approve & Publish' : d === 'Rejected' ? 'Reject' : 'Request Changes',

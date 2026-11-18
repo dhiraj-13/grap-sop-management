@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { SopService, Sop } from '../../services/sop.service';
 import { Subscription } from 'rxjs';
 import { CustomDropdownComponent, DropdownOption } from '../custom-dropdown/custom-dropdown.component';
+import { ConstantsService } from '../../shared/constants.service';
 
 @Component({
   selector: 'app-listing',
@@ -23,14 +24,14 @@ export class ListingComponent implements OnInit, OnDestroy {
   dateTo: string = '';
   
   categories = Object.keys(this.sopService.cats);
-  statuses = ['Draft', 'Submitted', 'Requested Modification', 'Modification In Progress', 'Resubmitted', 'Approved', 'Rejected'];
-
+  statuses = this.constants.sopStatuses;
+  
   categoryOptions: DropdownOption[] = [];
   statusOptions: DropdownOption[] = [];
-
+  
   // Pagination
   currentPage = 1;
-  pageSize = 10;
+  pageSize = this.constants.pagination.defaultPageSize;
   totalPages = 1;
 
   private searchSub!: Subscription;
@@ -40,7 +41,7 @@ export class ListingComponent implements OnInit, OnDestroy {
   // Time-based greeting
   greeting = '';
 
-  constructor(public sopService: SopService) {}
+  constructor(public sopService: SopService, private constants: ConstantsService) {}
 
   ngOnInit() {
     this.categoryOptions = this.categories.map(c => ({ value: c, label: c }));
@@ -56,7 +57,7 @@ export class ListingComponent implements OnInit, OnDestroy {
       this.searchTerm = term;
       this.currentPage = 1;
     });
-
+    
     // Subscribe to sops observable for real-time updates
     this.sopsSub = this.sopService.sops$.subscribe(sops => {
       this.sops = sops;
@@ -199,7 +200,7 @@ export class ListingComponent implements OnInit, OnDestroy {
 
   getPageNumbers(): number[] {
     const pages: number[] = [];
-    const maxVisible = 5;
+    const maxVisible = this.constants.pagination.maxVisiblePages;
     let start = Math.max(1, this.currentPage - Math.floor(maxVisible / 2));
     let end = Math.min(this.totalPages, start + maxVisible - 1);
     

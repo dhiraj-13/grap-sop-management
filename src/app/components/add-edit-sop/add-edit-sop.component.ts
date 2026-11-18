@@ -4,8 +4,8 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { SopService, Sop } from '../../services/sop.service';
 import { CustomDropdownComponent, DropdownOption } from '../custom-dropdown/custom-dropdown.component';
-
-const FILE_STORAGE_KEY = 'grap_sop_files';
+import { FileStorageService } from '../../shared/file-storage.service';
+import { ConstantsService } from '../../shared/constants.service';
 
 @Component({
   selector: 'app-add-edit-sop',
@@ -41,7 +41,9 @@ export class AddEditSopComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     public sopService: SopService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private fileStorage: FileStorageService,
+    private constants: ConstantsService
   ) {}
 
   ngOnInit() {
@@ -92,62 +94,47 @@ export class AddEditSopComponent implements OnInit {
     }
   }
 
-  onFileSelected(event: any) {
+  async onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
-      this.processFile(file);
+      await this.processFile(file);
     }
   }
 
-  onFileDropped(event: DragEvent) {
+  async onFileDropped(event: DragEvent) {
     event.preventDefault();
     const file = event.dataTransfer?.files[0];
     if (file) {
-      this.processFile(file);
+      await this.processFile(file);
     }
   }
 
-  processFile(file: File) {
-    const ext = file.name.split('.').pop()?.toLowerCase() || '';
-    const allowed = ['pdf', 'doc', 'docx'];
-    
-    if (!allowed.includes(ext)) {
-      this.ferr = `"${file.name}" is not allowed. Please upload a Word (.doc, .docx) or PDF file.`;
-      this.upFile = null;
-      this.pdfUrl = null;
-      return;
-    }
-
-    if (file.size > 10 * 1024 * 1024) { // 10MB limit
-      this.ferr = 'File size too large. Maximum limit is 10MB.';
-      this.upFile = null;
-      this.pdfUrl = null;
-      return;
-    }
-
-    this.ferr = '';
-    this.upFile = file;
-    this.upFileName = file.name;
-    this.upFileSize = (file.size / 1024 / 1024).toFixed(2) + ' MB';
-    this.upFileType = ext;
-
-    // Read file as base64 for storage
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      this.upFileContent = e.target.result;
+  async processFile(file: File) {
+    try {
+      const result = await this.fileStorage.processFile(file);
+      
+      this.ferr = '';
+      this.upFile = file;
+      this.upFileName = result.name;
+      this.upFileSize = result.size;
+      this.upFileType = result.type;
+      this.upFileContent = result.content;
       this.loadPreview();
-    };
-    reader.readAsDataURL(file);
 
-    if (!this.sopForm.get('name')?.value) {
-      const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "").replace(/_/g, ' ');
-      this.sopForm.patchValue({ name: nameWithoutExt });
+      if (!this.sopForm.get('name')?.value) {
+        const nameWithoutExt = this.fileStorage.sanitizeFilename(file.name);
+        this.sopForm.patchValue({ name: nameWithoutExt });
+      }
+    } catch (error) {
+      this.ferr = error as string;
+      this.upFile = null;
+      this.pdfUrl = null;
     }
   }
 
   loadPreview() {
-    if (this.upFileType === 'pdf' && this.upFileContent) {
-      this.pdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.upFileContent);
+    if (this.fileStorage.isPdf(this.upFileType) && this.upFileContent) {
+      this.pdfUrl = this.fileStorage.createPdfUrl(this.upFileContent);
     } else {
       this.pdfUrl = null;
     }
@@ -155,20 +142,13 @@ export class AddEditSopComponent implements OnInit {
 
   // Load stored file content from localStorage
   loadStoredFile(sopId: string) {
-    try {
-      const stored = localStorage.getItem(FILE_STORAGE_KEY);
-      if (stored) {
-        const files = JSON.parse(stored);
-        if (files[sopId]) {
-          this.upFileContent = files[sopId].content;
-          this.upFileName = files[sopId].name;
-          this.upFileType = files[sopId].type;
-          this.upFileSize = files[sopId].size;
-          this.loadPreview();
-        }
-      }
-    } catch (e) {
-      console.error('Error loading stored file:', e);
+    const file = this.fileStorage.loadStoredFile(sopId);
+    if (file) {
+      this.upFileContent = file.content;
+      this.upFileName = file.name;
+      this.upFileType = file.type;
+      this.upFileSize = file.size;
+      this.loadPreview();
     }
   }
 
@@ -176,19 +156,13 @@ export class AddEditSopComponent implements OnInit {
   saveStoredFile(sopId: string) {
     if (!this.upFileContent || !this.upFileName) return;
     
-    try {
-      const stored = localStorage.getItem(FILE_STORAGE_KEY);
-      const files = stored ? JSON.parse(stored) : {};
-      files[sopId] = {
-        content: this.upFileContent,
-        name: this.upFileName,
-        type: this.upFileType,
-        size: this.upFileSize
-      };
-      localStorage.setItem(FILE_STORAGE_KEY, JSON.stringify(files));
-    } catch (e) {
-      console.error('Error saving file to localStorage:', e);
-    }
+    const file: StoredFile = {
+      content: this.upFileContent,
+      name: this.upFileName,
+      type: this.upFileType || '',
+      size: this.upFileSize || ''
+    };
+    this.fileStorage.saveStoredFile(sopId, file);
   }
 
   save(mode: 'Draft' | 'submit') {
@@ -310,4 +284,11 @@ export class AddEditSopComponent implements OnInit {
 
     this.back.emit();
   }
+}
+
+interface StoredFile {
+  content: string;
+  name: string;
+  type: string;
+  size: string;
 }

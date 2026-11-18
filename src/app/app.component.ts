@@ -7,6 +7,7 @@ import { ReviewSopComponent } from './components/review-sop/review-sop.component
 import { ActivityTimelineComponent } from './components/activity-timeline/activity-timeline.component';
 import { ModalHostComponent } from './components/modal/modal-host.component';
 import { SopService, Notification } from './services/sop.service';
+import { ConstantsService } from './shared/constants.service';
 
 @Component({
   selector: 'app-root',
@@ -32,7 +33,7 @@ export class AppComponent {
   toastMsg: string | null = null;
   showNotif = false;
 
-  constructor(public sopService: SopService) {}
+  constructor(public sopService: SopService, public constants: ConstantsService) {}
 
   onLogin() {
     this.isLoggedIn = true;
@@ -56,7 +57,7 @@ export class AppComponent {
 
   showToast(msg: string) {
     this.toastMsg = msg;
-    setTimeout(() => this.toastMsg = null, 2600)
+    setTimeout(() => this.toastMsg = null, this.constants.toastDurationMs)
   }
 
   get notifications(): Notification[] {
