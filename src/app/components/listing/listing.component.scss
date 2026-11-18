@@ -39,15 +39,15 @@
 
 .kpi {
   background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border-light);
   border-radius: var(--radius-md);
   padding: 14px 16px;
   cursor: pointer;
   transition: all .15s;
+  border-top: 4px solid var(--color-primary);
 }
 
 .kpi:hover {
-  border-color: var(--color-primary-border);
+  border-top-color: var(--color-primaryAxis-light);
 }
 
 .kpi .l {
