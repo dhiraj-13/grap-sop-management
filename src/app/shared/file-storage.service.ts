@@ -67,7 +67,7 @@ export class FileStorageService {
     const allowed = this.constants.fileUpload.allowedTypes;
     
     if (!allowed.includes(ext)) {
-      throw new Error(`"${file.name}" is not allowed. Please upload a Word (.doc, .docx) or PDF file.`);
+      throw new Error(`"${file.name}" is not allowed. Please upload a PDF, Word (.doc, .docx), Excel (.xls, .xlsx), PowerPoint (.ppt, .pptx), Text (.txt, .csv, .rtf), or OpenDocument (.odt, .ods, .odp) file. Images (png, jpg, etc.) are not supported.`);
     }
 
     if (file.size > this.constants.fileUpload.maxSizeBytes) {

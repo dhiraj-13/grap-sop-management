@@ -12,7 +12,7 @@ export const environment = {
   fileUpload: {
     maxSizeMB: 10,
     maxSizeBytes: 10 * 1024 * 1024,
-    allowedTypes: ['pdf', 'doc', 'docx'],
+    allowedTypes: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'csv', 'rtf', 'odt', 'ods', 'odp'],
   },
   pagination: {
     defaultPageSize: 5,

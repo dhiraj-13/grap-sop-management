@@ -30,18 +30,31 @@
       <div id="docpane">
         <div class="doc" *ngIf="docTab === 'doc'">
           <!-- If PDF, render actual PDF viewer iframe -->
-          <div *ngIf="pdfUrl; else docpreview" style="width:100%; height:280px;">
+          <div *ngIf="pdfUrl; else wordPreview" style="width:100%; height:280px;">
             <iframe [src]="pdfUrl" style="width:100%; height:100%; border:none; border-radius:4px;"></iframe>
           </div>
           
-          <!-- If Word or general fallback -->
+          <!-- If Word (.docx) preview -->
+          <ng-template #wordPreview>
+            <div *ngIf="wordPreviewHtml; else excelPreview" class="doc-preview" style="width:100%; height:280px; overflow:auto; border:1px solid #ddd; border-radius:4px; padding:12px; background:#fff;">
+              <div [innerHTML]="wordPreviewHtml"></div>
+            </div>
+          </ng-template>
+          
+          <!-- If Excel (.xls/.xlsx) preview -->
+          <ng-template #excelPreview>
+            <div *ngIf="excelPreviewHtml; else docpreview" class="doc-preview" style="width:100%; height:280px; overflow:auto; border:1px solid #ddd; border-radius:4px; padding:12px; background:#fff;">
+              <div [innerHTML]="excelPreviewHtml"></div>
+            </div>
+          </ng-template>
+          
+          <!-- If non-PDF/Word/Excel file (PowerPoint, Text, OpenDocument) -->
           <ng-template #docpreview>
             <div *ngIf="upFileName; else nopreview">
               <h4>📄 {{cur.n}}</h4>
               <p><b>File Type:</b> .{{ upFileType || 'doc/docx' }}</p>
               <div class="doc-content" *ngIf="upFileContent; else genericPreview">
-                <!-- For Word docs, show a message that preview is limited -->
-                <p class="hint">Word document preview is not available in browser. The file has been uploaded and stored successfully.</p>
+                <p class="hint">{{ getFileTypeDescription(upFileType) }} preview is not available in browser. The file has been uploaded and stored successfully.</p>
                 <p class="hint">File size: {{ upFileSize }}</p>
                 <p class="hint">Ready for review</p>
               </div>

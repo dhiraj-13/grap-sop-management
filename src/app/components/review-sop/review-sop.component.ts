@@ -2,9 +2,11 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SopService, Sop } from '../../services/sop.service';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { DomSanitizer, SafeHtml, SafeResourceUrl } from '@angular/platform-browser';
 import { ModalService } from '../modal/modal.service';
 import { FileStorageService } from '../../shared/file-storage.service';
+import * as mammoth from 'mammoth';
+import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-review-sop',
@@ -26,6 +28,8 @@ export class ReviewSopComponent implements OnInit {
   
   // File preview state
   pdfUrl: SafeResourceUrl | null = null;
+  wordPreviewHtml: SafeHtml | null = null;
+  excelPreviewHtml: SafeHtml | null = null;
   upFileContent: string | null = null;
   upFileType: string | null = null;
   upFileName: string | null = null;
@@ -144,14 +148,94 @@ export class ReviewSopComponent implements OnInit {
   }
 
   loadPreview() {
-    if (this.fileStorage.isPdf(this.upFileType) && this.upFileContent) {
+    // Reset all previews
+    this.pdfUrl = null;
+    this.wordPreviewHtml = null;
+    this.excelPreviewHtml = null;
+
+    if (!this.upFileContent || !this.upFileType) return;
+
+    if (this.fileStorage.isPdf(this.upFileType)) {
       this.pdfUrl = this.fileStorage.createPdfUrl(this.upFileContent);
-    } else {
-      this.pdfUrl = null;
+    } else if (this.isWordDocx(this.upFileType)) {
+      this.generateWordPreview();
+    } else if (this.isExcel(this.upFileType)) {
+      this.generateExcelPreview();
     }
   }
 
-  addR(t: string) {
+  private isWordDocx(type: string): boolean {
+    return type === 'docx';
+  }
+
+  private isExcel(type: string): boolean {
+    return type === 'xls' || type === 'xlsx';
+  }
+
+  private async generateWordPreview() {
+    if (!this.upFileContent) return;
+    try {
+      // Convert base64 to ArrayBuffer
+      const arrayBuffer = this.base64ToArrayBuffer(this.upFileContent);
+      const result = await mammoth.convertToHtml({ arrayBuffer });
+      this.wordPreviewHtml = this.sanitizer.bypassSecurityTrustHtml(result.value);
+    } catch (error) {
+      console.error('Word preview error:', error);
+      this.wordPreviewHtml = this.sanitizer.bypassSecurityTrustHtml('<p class="hint">Unable to preview Word document</p>');
+    }
+  }
+
+  private async generateExcelPreview() {
+    if (!this.upFileContent) return;
+    try {
+      // Convert base64 to ArrayBuffer
+      const arrayBuffer = this.base64ToArrayBuffer(this.upFileContent);
+      const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+      
+      // Get first sheet
+      const firstSheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[firstSheetName];
+      
+      // Convert to HTML table
+      const html = XLSX.utils.sheet_to_html(worksheet, { editable: false });
+      this.excelPreviewHtml = this.sanitizer.bypassSecurityTrustHtml(html);
+    } catch (error) {
+      console.error('Excel preview error:', error);
+      this.excelPreviewHtml = this.sanitizer.bypassSecurityTrustHtml('<p class="hint">Unable to preview Excel document</p>');
+    }
+  }
+
+  private base64ToArrayBuffer(base64: string): ArrayBuffer {
+    // Remove data URL prefix if present
+    const base64Data = base64.includes(',') ? base64.split(',')[1] : base64;
+    const binaryString = atob(base64Data);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes.buffer;
+  }
+
+getFileTypeDescription(type: string | null): string {
+  const descriptions: { [key: string]: string } = {
+    'pdf': 'PDF',
+    'doc': 'Word',
+    'docx': 'Word',
+    'xls': 'Excel',
+    'xlsx': 'Excel',
+    'ppt': 'PowerPoint',
+    'pptx': 'PowerPoint',
+    'txt': 'Text',
+    'csv': 'CSV',
+    'rtf': 'Rich Text',
+    'odt': 'OpenDocument Text',
+    'ods': 'OpenDocument Spreadsheet',
+    'odp': 'OpenDocument Presentation'
+  };
+  return descriptions[type?.toLowerCase() || ''] || 'Document';
+}
+
+addR(t: string) {
     this.remarks = t;
   }
 
