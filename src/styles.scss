@@ -65,8 +65,10 @@ h2 { font-size: 18px; margin: 0; }
 .btn:hover { background: var(--color-surface-hover); }
 .pri { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-text-on-primary); }
 .pri:hover { background: var(--color-primaryAxis-light); border-color: var(--color-primaryAxis-light); }
-.warn { border-color: var(--color-warning-border); color: var(--color-warning-text); }
-.danger { border-color: var(--color-error-border); color: var(--color-error-dark); }
+.warn { border-color: var(--color-border); color: var(--color-text); background: var(--color-bg-secondary); }
+.warn:hover { background: var(--color-surface-hover); }
+.danger { border-color: var(--color-border); color: var(--color-text); background: var(--color-bg-secondary); }
+.danger:hover { background: var(--color-surface-hover); }
 .sm { padding: 4px 10px; font-size: 12px; }
 
 input, select, textarea { width: 100%; font-family: var(--font-sans); font-size: 13px; padding: 8px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-bg-secondary); color: var(--color-text); }
