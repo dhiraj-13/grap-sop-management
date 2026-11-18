@@ -54,15 +54,28 @@
       <div class="row2">
         <div>
           <label class="f">Category *</label>
-          <select id="fcat2" formControlName="category" (change)="onCategoryChange()">
-            <option *ngFor="let c of categories" [value]="c">{{c}}</option>
-          </select>
+          <app-custom-dropdown
+            id="fcat2"
+            [options]="categoryOptions"
+            formControlName="category"
+            placeholder="Select category"
+            [searchable]="true"
+            [clearable]="false"
+            ariaLabel="Select SOP category"
+            (selectionChange)="onCategoryChange()">
+          </app-custom-dropdown>
         </div>
         <div>
           <label class="f">Sub-category *</label>
-          <select id="fsub" formControlName="subCategory">
-            <option *ngFor="let sub of subcategories" [value]="sub">{{sub}}</option>
-          </select>
+          <app-custom-dropdown
+            id="fsub"
+            [options]="subcategoryOptions"
+            formControlName="subCategory"
+            placeholder="Select sub-category"
+            [searchable]="true"
+            [clearable]="false"
+            ariaLabel="Select SOP sub-category">
+          </app-custom-dropdown>
         </div>
       </div>
 

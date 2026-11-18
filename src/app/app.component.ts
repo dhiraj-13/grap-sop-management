@@ -5,7 +5,7 @@ import { ListingComponent } from './components/listing/listing.component';
 import { AddEditSopComponent } from './components/add-edit-sop/add-edit-sop.component';
 import { ReviewSopComponent } from './components/review-sop/review-sop.component';
 import { ActivityTimelineComponent } from './components/activity-timeline/activity-timeline.component';
-import { SopService } from './services/sop.service';
+import { SopService, Notification } from './services/sop.service';
 
 @Component({
   selector: 'app-root',
@@ -39,6 +39,7 @@ export class AppComponent {
 
   onSignOut() {
     this.isLoggedIn = false;
+    this.showNotif = false;
   }
 
   onNavigate(event: {page: string, id?: string, canAct?: boolean}) {
@@ -53,6 +54,55 @@ export class AppComponent {
 
   showToast(msg: string) {
     this.toastMsg = msg;
-    setTimeout(() => this.toastMsg = null, 2600);
+    setTimeout(() => this.toastMsg = null, 2600)
+  }
+
+  get notifications(): Notification[] {
+    return this.sopService.getNotifications();
+  }
+
+  get unreadCount(): number {
+    return this.sopService.getUnreadNotificationCount();
+  }
+
+  toggleNotifications() {
+    this.showNotif = !this.showNotif;
+  }
+
+  markAsRead(id: string) {
+    this.sopService.markNotificationAsRead(id);
+  }
+
+  markAllRead() {
+    this.sopService.markAllNotificationsAsRead();
+  }
+
+  formatNotificationTime(timestamp: string): string {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} min ago`;
+    if (diffHours < 24) return `${diffHours} h ago`;
+    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  getNotificationIcon(type: string): string {
+    const icons: {[key: string]: string} = {
+      'info': '📥',
+      'success': '✅',
+      'warning': '✏️',
+      'error': '❌'
+    };
+    return icons[type] || '🔔';
+  }
+
+  getNotificationClass(type: string): string {
+    return `notif-${type}`;
   }
 }

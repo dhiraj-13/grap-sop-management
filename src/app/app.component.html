@@ -6,22 +6,63 @@
       <span class="logo sm">GRAP</span>
       <b>SOP Management</b>
     </div>
-    <input class="gsearch" placeholder="🔍 Search SOP name or ID">
-    <button class="icon" (click)="showNotif = !showNotif" title="Notifications">
-      🔔<span class="dot" id="ncount">3</span>
-    </button>
-    <div class="who">
-      <b id="uname">{{sopService.currentUser.name}}</b>
-      <span class="pill role" id="urole">{{sopService.currentUser.role}}</span>
+    <input 
+      class="gsearch" 
+      placeholder="🔍 Search SOP name" 
+      (input)="sopService.setSearchTerm($any($event.target).value)">
+      
+    <div class="header-actions">
+      <button class="icon notif-btn" (click)="toggleNotifications()" title="Notifications" [class.has-unread]="unreadCount > 0">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        <span class="notif-badge" *ngIf="unreadCount > 0">{{unreadCount > 9 ? '9+' : unreadCount}}</span>
+      </button>
+      
+      <div class="who">
+        <b id="uname">{{sopService.currentUser.name}}</b>
+        <span class="pill role" id="urole">{{sopService.currentUser.role}}</span>
+      </div>
+      <button class="btn sm" (click)="onSignOut()">Sign out</button>
     </div>
-    <button class="btn sm" (click)="onSignOut()">Sign out</button>
   </header>
 
-  <div id="notif" class="notif" *ngIf="showNotif">
-    <b>Notifications</b>
-    <div>📥 <b>Legal Notice Handling v2</b> resubmitted by Anu Jha · 10 min ago</div>
-    <div>✏️ <b>ATM Cash Shortage</b>: modification requested · 2 h ago</div>
-    <div>✅ <b>Credit Card Dispute v3</b> approved & published · yesterday</div>
+  <!-- Notifications Dropdown -->
+  <div class="notif-dropdown" *ngIf="showNotif" (click)="$event.stopPropagation()">
+    <div class="notif-header">
+      <h3>Notifications</h3>
+      <div class="notif-header-actions">
+        <button class="btn-link" *ngIf="unreadCount > 0" (click)="markAllRead()">Mark all read</button>
+      </div>
+    </div>
+    
+    <div class="notif-list" *ngIf="notifications.length > 0; else noNotifications">
+      <div class="notif-item" *ngFor="let notif of notifications" [class]="getNotificationClass(notif.type)" [class.unread]="!notif.read" (click)="markAsRead(notif.id)">
+        <div class="notif-icon">{{getNotificationIcon(notif.type)}}</div>
+        <div class="notif-content">
+          <div class="notif-title">{{notif.title}}</div>
+          <div class="notif-message">{{notif.message}}</div>
+          <div class="notif-time">{{formatNotificationTime(notif.timestamp)}}</div>
+        </div>
+        <div class="notif-unread-dot" *ngIf="!notif.read"></div>
+      </div>
+    </div>
+    
+    <ng-template #noNotifications>
+      <div class="notif-empty">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        <p>No notifications</p>
+        <span>You're all caught up!</span>
+      </div>
+    </ng-template>
+    
+    <div class="notif-footer" *ngIf="notifications.length > 0">
+      <button class="btn-link" (click)="markAllRead()">Mark all as read</button>
+    </div>
   </div>
 
   <main>

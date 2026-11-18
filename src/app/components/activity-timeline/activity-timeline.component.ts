@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SopService, Sop } from '../../services/sop.service';
+import { SopService, Sop, ActivityEntry } from '../../services/sop.service';
 
 @Component({
   selector: 'app-activity-timeline',
@@ -14,21 +14,55 @@ export class ActivityTimelineComponent implements OnInit {
   @Output() close = new EventEmitter<void>();
 
   sop!: Sop;
-  history: any[] = [];
+  activities: ActivityEntry[] = [];
 
   constructor(private sopService: SopService) {}
 
   ngOnInit() {
-    this.sop = this.sopService.getSops().find(s => s.id === this.id)!;
-    this.history = this.sop.hist || [
-      ['10 Nov 2026 10:00', 'Created', '—', 'Draft', 'v1', this.sop.byn, ''],
-      ...(this.sop.st !== 'Draft' ? [['11 Nov 2026 15:20', 'Submitted', 'Draft', 'Submitted', 'v1', this.sop.byn, '']] : []),
-      ...(this.sop.remark ? [[this.sop.up + ' 11:45', this.sop.st === 'Rejected' ? 'Rejected' : 'Modification requested', 'Submitted', this.sop.st === 'Rejected' ? 'Rejected' : 'Requested Modification', 'v' + this.sop.v, this.sop.rby, this.sop.remark]] : []),
-      ...(this.sop.st === 'Resubmitted' ? [['16 Nov 2026 09:10', 'Resubmitted', 'Modification In Progress', 'Resubmitted', 'v' + this.sop.v, this.sop.byn, 'Added escalation matrix']] : [])
-    ];
+    this.sop = this.sopService.getSopById(this.id)!;
+    this.activities = this.sop.hist || [];
   }
 
-  get reversedHistory() {
-    return [...this.history].reverse();
+  formatTimestamp(timestamp: string): string {
+    try {
+      const date = new Date(timestamp);
+      return date.toLocaleString('en-GB', { 
+        day: '2-digit', 
+        month: 'short', 
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }).replace(',', '');
+    } catch {
+      return timestamp;
+    }
+  }
+
+  getActionIcon(action: string): string {
+    const icons: {[key: string]: string} = {
+      'Created': '📝',
+      'Submitted': '📤',
+      'Resubmitted': '🔄',
+      'Approved': '✅',
+      'Rejected': '❌',
+      'Modification Requested': '✏️',
+      'Modification In Progress': '⚙️',
+      'New version uploaded': '📎'
+    };
+    return icons[action] || '📋';
+  }
+
+  getActionClass(action: string): string {
+    const classes: {[key: string]: string} = {
+      'Created': 'action-created',
+      'Submitted': 'action-submitted',
+      'Resubmitted': 'action-resubmitted',
+      'Approved': 'action-approved',
+      'Rejected': 'action-rejected',
+      'Modification Requested': 'action-modification-requested',
+      'Modification In Progress': 'action-modification-progress',
+      'New version uploaded': 'action-new-version'
+    };
+    return classes[action] || 'action-default';
   }
 }

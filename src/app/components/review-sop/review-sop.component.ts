@@ -25,7 +25,7 @@ export class ReviewSopComponent implements OnInit {
   constructor(public sopService: SopService) {}
 
   ngOnInit() {
-    this.cur = this.sopService.getSops().find(s => s.id === this.id)!;
+    this.cur = this.sopService.getSopById(this.id)!;
   }
 
   get currentStepIndex(): number {
@@ -45,14 +45,12 @@ export class ReviewSopComponent implements OnInit {
     const msg = d === 'Approved' ? 'Approve and publish this SOP to the knowledge base?' : d === 'Rejected' ? 'Reject this SOP?' : 'Send back to the creator for changes?';
     if (!confirm(msg)) return;
 
-    this.cur.st = d;
-    this.cur.up = '16 Nov 2026';
-    if (this.remarks) {
-      this.cur.remark = this.remarks;
-      this.cur.rby = this.sopService.currentUser.name;
+    const action = d === 'Approved' ? 'approve' : d === 'Rejected' ? 'reject' : 'request-modification';
+    const success = this.sopService.performAction(this.cur.id, action, this.remarks);
+    
+    if (success) {
+      this.notify.emit(d === 'Approved' ? `✅ ${this.cur.id} approved and published` : `${this.cur.id} ${d.toLowerCase()}`);
+      this.back.emit();
     }
-    this.sopService.updateSop(this.cur);
-    this.notify.emit(d === 'Approved' ? `✅ ${this.cur.id} approved and published` : `${this.cur.id} ${d.toLowerCase()}`);
-    this.back.emit();
   }
 }

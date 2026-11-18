@@ -1,0 +1,67 @@
+<div class="custom-dropdown" [class.open]="isOpen" [class.focused]="isFocused" [class.disabled]="disabled" [style.width]="width" [id]="id">
+  <div class="dropdown-trigger" 
+       (click)="toggle()" 
+       (focusin)="isFocused = true" 
+       (focusout)="isFocused = false"
+       [attr.aria-label]="ariaLabel"
+       [attr.aria-expanded]="isOpen"
+       [attr.aria-haspopup]="'listbox'"
+       [attr.aria-disabled]="disabled"
+       tabindex="0"
+       (keydown.enter)="toggle()"
+       (keydown.space)="$event.preventDefault(); toggle()"
+       role="combobox">
+    
+    <span class="selected-value">{{ getSelectedLabel() }}</span>
+    
+    <span class="dropdown-arrow" [class.rotated]="isOpen">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </span>
+    
+    <span *ngIf="clearable && value !== null" class="clear-btn" (click)="clearSelection($event)" aria-label="Clear selection">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </span>
+  </div>
+
+  <div class="dropdown-panel" *ngIf="isOpen" [style.max-height]="maxHeight" role="listbox" [attr.aria-label]="ariaLabel">
+    <div class="search-box" *ngIf="searchable">
+      <input type="text" 
+             placeholder="Search..." 
+             [(ngModel)]="searchTerm" 
+             (input)="filterOptions()"
+             (click)="$event.stopPropagation()"
+             (keydown.arrow.down)="$event.stopPropagation()"
+             aria-label="Search options"
+             autocomplete="off">
+    </div>
+    
+    <div class="options-list" role="listbox">
+      <div *ngIf="filteredOptions.length === 0" class="no-results">
+        No options found
+      </div>
+      
+      <div *ngFor="let option of filteredOptions; let i = index" 
+           class="option" 
+           [class.selected]="option.value === value"
+           [class.disabled]="option.disabled"
+           [class.highlighted]="highlightedIndex === i"
+           (click)="selectOption(option)"
+           (mouseenter)="highlightedIndex = i"
+           role="option"
+           [attr.aria-selected]="option.value === value"
+           [attr.aria-disabled]="option.disabled">
+        <span class="option-label">{{ option.label }}</span>
+        <span *ngIf="option.value === value" class="check-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>

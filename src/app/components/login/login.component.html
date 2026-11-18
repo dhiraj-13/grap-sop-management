@@ -3,11 +3,19 @@
     <div class="logo" id="logo-grap">GRAP</div>
     <h1>SOP Management</h1>
     <p class="muted">Grievance Resolution Automation Program · Axis Bank</p>
-    <button class="btn pri big" id="signin-btn" (click)="signIn()">🔐 Sign in with Axis SSO</button>
+    <button class="btn pri big" id="signin-btn" (click)="signIn()" [disabled]="!selectedPersona">🔐 Sign in with Axis SSO</button>
     <p class="hint">Use your bank Microsoft account. No separate password needed.</p>
     <div class="demo" id="demo-persona">Demo persona:
       <label><input type="radio" name="per" value="Maker" [(ngModel)]="selectedPersona" id="radio-maker"> Maker</label>
       <label><input type="radio" name="per" value="Reviewer" [(ngModel)]="selectedPersona" id="radio-reviewer"> Reviewer</label>
+    </div>
+    <div class="access-denied" *ngIf="showAccessDenied">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span>Access not assigned. Please select a persona.</span>
     </div>
   </div>
 </div>

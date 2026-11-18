@@ -11,13 +11,19 @@ import { SopService } from '../../services/sop.service';
   styleUrls: ['./login.component.scss']
 })
 export class LoginComponent {
-  selectedPersona: 'Maker' | 'Reviewer' = 'Reviewer';
+  selectedPersona: 'Maker' | 'Reviewer' | '' = '';
+  showAccessDenied = false;
   @Output() loginSuccess = new EventEmitter<void>();
 
   constructor(public sopService: SopService) {}
 
   signIn() {
-    this.sopService.currentUser.role = this.selectedPersona;
+    if (!this.selectedPersona) {
+      this.showAccessDenied = true;
+      return;
+    }
+    this.showAccessDenied = false;
+    this.sopService.setCurrentUser(this.selectedPersona);
     this.loginSuccess.emit();
   }
 }

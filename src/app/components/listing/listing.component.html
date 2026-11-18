@@ -1,7 +1,7 @@
 <section id="v-list">
   <div class="hello">
     <div>
-      <h2 id="greet">Good morning, {{sopService.currentUser.name.split(' ')[0]}}</h2>
+      <h2 id="greet">{{greeting}}, {{sopService.currentUser.name.split(' ')[0]}}</h2>
       <p class="muted" id="sub" *ngIf="sopService.currentUser.role === 'Reviewer'">
         You have <b id="pendc">{{reviewList.length}}</b> SOPs waiting for your review.
       </p>
@@ -23,14 +23,34 @@
     </div>
 
     <div class="filters">
-      <select id="fcat" [(ngModel)]="selectedCategory">
-        <option value="">All categories</option>
-        <option *ngFor="let c of categories" [value]="c">{{c}}</option>
-      </select>
-      <select id="fst" [(ngModel)]="selectedStatus">
-        <option value="">All statuses</option>
-        <option *ngFor="let st of statuses" [value]="st">{{st}}</option>
-      </select>
+      <app-custom-dropdown
+        id="fcat"
+        [options]="categoryOptions"
+        [(ngModel)]="selectedCategory"
+        placeholder="All categories"
+        [searchable]="true"
+        [clearable]="true"
+        ariaLabel="Filter by category">
+      </app-custom-dropdown>
+      
+      <app-custom-dropdown
+        id="fst"
+        [options]="statusOptions"
+        [(ngModel)]="selectedStatus"
+        placeholder="All statuses"
+        [searchable]="true"
+        [clearable]="true"
+        ariaLabel="Filter by status">
+      </app-custom-dropdown>
+
+      <div class="date-filters">
+        <input type="date" id="dateFrom" [(ngModel)]="dateFrom" placeholder="From" class="date-input" (change)="currentPage = 1" title="From date">
+        <span class="date-separator">to</span>
+        <input type="date" id="dateTo" [(ngModel)]="dateTo" placeholder="To" class="date-input" (change)="currentPage = 1" title="To date">
+      </div>
+
+      <button class="btn sm" *ngIf="hasActiveFilters()" (click)="clearFilters()" id="clear-filters-btn">Clear filters</button>
+      
       <span class="muted" id="cnt">{{filteredRows.length}} SOP(s)</span>
     </div>
 
@@ -42,28 +62,30 @@
           <th>Category / Sub-category</th>
           <th>Status</th>
           <th>Uploaded by</th>
+          <th>Created date</th>
           <th>Last updated</th>
           <th style="text-align:right">Actions</th>
         </tr>
       </thead>
       <tbody id="rows">
-        <tr *ngFor="let s of filteredRows" [id]="'row-' + s.id">
+        <tr *ngFor="let s of paginatedRows" [id]="'row-' + s.id">
           <td><b>{{s.n}}</b><div class="hint mono">{{s.id}}</div></td>
           <td>v{{s.v}}</td>
           <td>{{s.c}}<div class="hint">{{s.s2}}</div></td>
           <td><span [class]="badgeClass(s.st)">{{s.st}}</span></td>
           <td>{{s.byn}}</td>
+          <td>{{s.createdAt}}</td>
           <td>{{s.up}}</td>
           <td class="ra">
             <button class="btn sm" [id]="'view-btn-' + s.id" (click)="openView(s.id)">View</button>
             <button class="btn sm" [id]="'act-btn-' + s.id" (click)="openActivity(s.id)">Activity</button>
-            <button class="btn sm" *ngIf="tab === 'mine' && (s.st === 'Draft' || s.st === 'Modification In Progress')" [id]="'edit-btn-' + s.id" (click)="openEdit(s.id)">Edit</button>
-            <button class="btn sm warn" *ngIf="tab === 'mine' && s.st === 'Requested Modification'" [id]="'makechg-btn-' + s.id" (click)="makeChanges(s.id)">Make changes</button>
-            <button class="btn sm pri" *ngIf="tab === 'review'" [id]="'rev-btn-' + s.id" (click)="openReview(s.id)">Review</button>
+            <button class="btn sm" *ngIf="tab === 'mine' && sopService.canEdit(s)" [id]="'edit-btn-' + s.id" (click)="openEdit(s.id)">Edit</button>
+            <button class="btn sm warn" *ngIf="tab === 'mine' && sopService.canMakeChanges(s)" [id]="'makechg-btn-' + s.id" (click)="makeChanges(s.id)">Make changes</button>
+            <button class="btn sm pri" *ngIf="tab === 'review' && sopService.canReview(s)" [id]="'rev-btn-' + s.id" (click)="openReview(s.id)">Review</button>
           </td>
         </tr>
-        <tr *ngIf="filteredRows.length === 0">
-          <td colspan="7">
+        <tr *ngIf="paginatedRows.length === 0">
+          <td colspan="8">
             <div class="empty">
               {{tab === 'review' ? '🎉 Nothing waiting for your review.' : 'No SOPs yet. Click + Add SOP to upload your first one.'}}
             </div>
@@ -71,5 +93,42 @@
         </tr>
       </tbody>
     </table>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button class="btn sm" (click)="prevPage()" [disabled]="currentPage === 1" aria-label="Previous page">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+      
+      <span class="page-info">Page {{currentPage}} of {{totalPages}}</span>
+      
+      <div class="page-numbers">
+        <button 
+          class="btn sm page-btn" 
+          *ngFor="let page of getPageNumbers()" 
+          [class.active]="page === currentPage"
+          (click)="goToPage(page)"
+          [attr.aria-label]="'Page ' + page">
+          {{page}}
+        </button>
+      </div>
+      
+      <span class="page-info">{{filteredRows.length}} items</span>
+      
+      <select class="page-size-select" [(ngModel)]="pageSize" (change)="onPageSizeChange()" aria-label="Items per page">
+        <option value="5">5 per page</option>
+        <option value="10">10 per page</option>
+        <option value="25">25 per page</option>
+        <option value="50">50 per page</option>
+      </select>
+      
+      <button class="btn sm" (click)="nextPage()" [disabled]="currentPage === totalPages" aria-label="Next page">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+    </div>
   </div>
 </section>

@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { SopService, Sop } from '../../services/sop.service';
+import { CustomDropdownComponent, DropdownOption } from '../custom-dropdown/custom-dropdown.component';
 
 @Component({
   selector: 'app-add-edit-sop',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, CustomDropdownComponent],
   templateUrl: './add-edit-sop.component.html',
   styleUrls: ['./add-edit-sop.component.scss']
 })
@@ -19,6 +20,9 @@ export class AddEditSopComponent implements OnInit {
   sopForm!: FormGroup;
   subcategories: string[] = [];
   categories = Object.keys(this.sopService.cats);
+  
+  categoryOptions: DropdownOption[] = [];
+  subcategoryOptions: DropdownOption[] = [];
   
   // File upload state
   upFile: File | null = null;
@@ -38,6 +42,8 @@ export class AddEditSopComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.categoryOptions = this.categories.map(c => ({ value: c, label: c }));
+    
     this.sopForm = this.fb.group({
       name: ['', Validators.required],
       category: ['Cards', Validators.required],
@@ -49,7 +55,7 @@ export class AddEditSopComponent implements OnInit {
     this.onCategoryChange();
 
     if (this.editId) {
-      this.currentSop = this.sopService.getSops().find(s => s.id === this.editId) || null;
+      this.currentSop = this.sopService.getSopById(this.editId) || null;
       if (this.currentSop) {
         this.sopForm.patchValue({
           name: this.currentSop.n,
@@ -74,6 +80,7 @@ export class AddEditSopComponent implements OnInit {
 
   updateSubcategories(cat: string) {
     this.subcategories = this.sopService.cats[cat] || [];
+    this.subcategoryOptions = this.subcategories.map(s => ({ value: s, label: s }));
     if (this.subcategories.length > 0 && !this.subcategories.includes(this.sopForm.get('subCategory')?.value)) {
       this.sopForm.patchValue({ subCategory: this.subcategories[0] });
     }
@@ -143,45 +150,101 @@ export class AddEditSopComponent implements OnInit {
     }
 
     const val = this.sopForm.value;
-    const now = '17 Nov 2026';
+    const now = this.sopService.formatDate();
 
     if (this.editId && this.currentSop) {
       const wasMod = this.currentSop.st === 'Modification In Progress';
-      if (this.currentSop.st !== 'Draft' && !wasMod) {
-        this.currentSop.v++;
-      } else if (wasMod) {
-        this.currentSop.v++;
+      const action = mode === 'Draft' ? (wasMod ? 'make-changes' : 'save-draft') : (wasMod ? 'resubmit' : 'submit');
+      
+      if (action === 'save-draft') {
+        // Just save as draft
+        this.currentSop.n = val.name;
+        this.currentSop.c = val.category;
+        this.currentSop.s2 = val.subCategory;
+        this.currentSop.comments = val.comments;
+        this.currentSop.up = now;
+        this.currentSop.st = 'Draft';
+        if (this.upFileName) {
+          this.currentSop.fileName = this.upFileName;
+        }
+        this.sopService.updateSop(this.currentSop);
+        this.notify.emit('Saved as draft');
+      } else {
+        // Use performAction for proper workflow
+        const success = this.sopService.performAction(this.currentSop.id, action as any, val.comments);
+        if (success) {
+          this.notify.emit(mode === 'Draft' ? 'Saved as draft' : `Sent for review as ${this.currentSop?.st}`);
+        }
       }
-      this.currentSop.n = val.name;
-      this.currentSop.c = val.category;
-      this.currentSop.s2 = val.subCategory;
-      this.currentSop.comments = val.comments;
-      this.currentSop.up = now;
-      this.currentSop.st = mode === 'Draft' ? (wasMod ? 'Modification In Progress' : 'Draft') : (wasMod ? 'Resubmitted' : 'Submitted');
-      if (mode !== 'Draft') {
-        delete this.currentSop.remark;
-      }
-      if (this.upFileName) {
-        this.currentSop.fileName = this.upFileName;
-      }
-      this.sopService.updateSop(this.currentSop);
-      this.notify.emit(mode === 'Draft' ? 'Saved as draft' : `Sent for review as ${this.currentSop.st}`);
     } else {
-      const newSop: Sop = {
-        id: 'SOP-00' + (30 + this.sopService.getSops().length),
-        n: val.name,
-        v: 1,
-        c: val.category,
-        s2: val.subCategory,
-        st: mode === 'Draft' ? 'Draft' : 'Submitted',
-        by: this.sopService.currentUser.email,
-        byn: this.sopService.currentUser.name,
-        up: now,
-        comments: val.comments,
-        fileName: this.upFileName || 'document.pdf'
-      };
-      this.sopService.addSop(newSop);
-      this.notify.emit(mode === 'Draft' ? 'Saved as draft' : 'SOP submitted for review');
+      // New SOP
+      if (mode === 'Draft') {
+        const newSop: Sop = {
+          id: this.sopService.generateSopId(),
+          n: val.name,
+          v: 1,
+          c: val.category,
+          s2: val.subCategory,
+          st: 'Draft',
+          by: this.sopService.currentUser.email,
+          byn: this.sopService.currentUser.name,
+          up: now,
+          comments: val.comments,
+          fileName: this.upFileName || 'document.pdf',
+          createdAt: now,
+          hist: [{
+            timestamp: this.sopService.formatDateTime(),
+            action: 'Created',
+            doneBy: this.sopService.currentUser.name,
+            doneByEmail: this.sopService.currentUser.email,
+            statusBefore: '—',
+            statusAfter: 'Draft',
+            version: 'v1',
+            remarks: ''
+          }]
+        };
+        this.sopService.addSop(newSop);
+        this.notify.emit('Saved as draft');
+      } else {
+        const newSop: Sop = {
+          id: this.sopService.generateSopId(),
+          n: val.name,
+          v: 1,
+          c: val.category,
+          s2: val.subCategory,
+          st: 'Submitted',
+          by: this.sopService.currentUser.email,
+          byn: this.sopService.currentUser.name,
+          up: now,
+          comments: val.comments,
+          fileName: this.upFileName || 'document.pdf',
+          createdAt: now,
+          hist: [
+            {
+              timestamp: this.sopService.formatDateTime(),
+              action: 'Created',
+              doneBy: this.sopService.currentUser.name,
+              doneByEmail: this.sopService.currentUser.email,
+              statusBefore: '—',
+              statusAfter: 'Draft',
+              version: 'v1',
+              remarks: ''
+            },
+            {
+              timestamp: this.sopService.formatDateTime(),
+              action: 'Submitted',
+              doneBy: this.sopService.currentUser.name,
+              doneByEmail: this.sopService.currentUser.email,
+              statusBefore: 'Draft',
+              statusAfter: 'Submitted',
+              version: 'v1',
+              remarks: ''
+            }
+          ]
+        };
+        this.sopService.addSop(newSop);
+        this.notify.emit('SOP submitted for review');
+      }
     }
 
     this.back.emit();
