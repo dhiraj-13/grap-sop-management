@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SopService, Sop } from '../../services/sop.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { ModalService } from '../modal/modal.service';
 
 const FILE_STORAGE_KEY = 'grap_sop_files';
 
@@ -35,7 +36,7 @@ export class ReviewSopComponent implements OnInit {
   flow: string[] = [];
   flowStatus: ('completed' | 'current' | 'pending' | 'skipped')[] = [];
 
-  constructor(public sopService: SopService, private sanitizer: DomSanitizer) {}
+  constructor(public sopService: SopService, private sanitizer: DomSanitizer, private modalService: ModalService) {}
 
   ngOnInit() {
     this.cur = this.sopService.getSopById(this.id)!;
@@ -157,13 +158,27 @@ export class ReviewSopComponent implements OnInit {
     this.remarks = t;
   }
 
-  decide(d: 'Approved' | 'Rejected' | 'Requested Modification') {
+  async decide(d: 'Approved' | 'Rejected' | 'Requested Modification') {
     if (d !== 'Approved' && !this.remarks.trim()) {
       this.notify.emit('Please enter remarks');
       return;
     }
-    const msg = d === 'Approved' ? 'Approve and publish this SOP to the knowledge base?' : d === 'Rejected' ? 'Reject this SOP?' : 'Send back to the creator for changes?';
-    if (!confirm(msg)) return;
+    
+    const config = {
+      title: d === 'Approved' ? 'Approve SOP' : d === 'Rejected' ? 'Reject SOP' : 'Request Modification',
+      message: d === 'Approved'
+        ? 'Approve and publish this SOP to the knowledge base?'
+        : d === 'Rejected'
+          ? 'Reject this SOP? This action cannot be undone.'
+          : 'Send back to the creator for changes?',
+      type: 'confirm' as const,
+      confirmText: d === 'Approved' ? 'Approve & Publish' : d === 'Rejected' ? 'Reject' : 'Request Changes',
+      cancelText: 'Cancel',
+      showCancel: true
+    };
+    
+    const confirmed = await this.modalService.show(config);
+    if (!confirmed) return;
 
     const action = d === 'Approved' ? 'approve' : d === 'Rejected' ? 'reject' : 'request-modification';
     const success = this.sopService.performAction(this.cur.id, action, this.remarks);

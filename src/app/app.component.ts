@@ -5,18 +5,20 @@ import { ListingComponent } from './components/listing/listing.component';
 import { AddEditSopComponent } from './components/add-edit-sop/add-edit-sop.component';
 import { ReviewSopComponent } from './components/review-sop/review-sop.component';
 import { ActivityTimelineComponent } from './components/activity-timeline/activity-timeline.component';
+import { ModalHostComponent } from './components/modal/modal-host.component';
 import { SopService, Notification } from './services/sop.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [
-    CommonModule, 
-    LoginComponent, 
-    ListingComponent, 
-    AddEditSopComponent, 
-    ReviewSopComponent, 
-    ActivityTimelineComponent
+    CommonModule,
+    LoginComponent,
+    ListingComponent,
+    AddEditSopComponent,
+    ReviewSopComponent,
+    ActivityTimelineComponent,
+    ModalHostComponent
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']

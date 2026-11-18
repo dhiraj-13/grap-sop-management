@@ -1,0 +1,36 @@
+<div class="modal-backdrop" (click)="onBackdropClick($event)" (keydown)="onKeydown($event)" tabindex="-1" *ngIf="isOpen" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal-container {{ modalClass }}" role="document">
+    <div class="modal-header">
+      <h2 id="modal-title" class="modal-title">{{ config.title }}</h2>
+      <button class="modal-close" (click)="onCancel()" aria-label="Close" type="button">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    
+    <div class="modal-body">
+      <p class="modal-message">{{ config.message }}</p>
+    </div>
+    
+    <div class="modal-footer">
+      <button 
+        *ngIf="config.showCancel !== false" 
+        class="btn modal-btn-cancel" 
+        (click)="onCancel()"
+        type="button">
+        {{ config.cancelText || 'Cancel' }}
+      </button>
+      <button 
+        class="btn modal-btn-confirm" 
+        (click)="onConfirm()"
+        type="button"
+        [class.btn-primary]="config.type === 'confirm' || config.type === 'success' || config.type === 'info'"
+        [class.btn-danger]="config.type === 'error' || config.type === 'warning'"
+        [class.btn-warning]="config.type === 'warning'">
+        {{ config.confirmText || (config.type === 'confirm' ? 'Confirm' : 'OK') }}
+      </button>
+    </div>
+  </div>
+</div>
