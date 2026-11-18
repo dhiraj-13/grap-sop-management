@@ -15,7 +15,7 @@ export const environment = {
     allowedTypes: ['pdf', 'doc', 'docx'],
   },
   pagination: {
-    defaultPageSize: 10,
+    defaultPageSize: 5,
     pageSizeOptions: [5, 10, 25, 50],
     maxVisiblePages: 5,
   },

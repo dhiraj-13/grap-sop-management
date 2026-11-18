@@ -93,7 +93,7 @@
     </table>
 
     <!-- Pagination -->
-    <div class="pagination" *ngIf="totalPages > 1">
+    <div class="pagination" *ngIf="filteredRows.length > 0">
       <div class="pagination-left">
         <span class="page-info">Page {{currentPage}} of {{totalPages}}</span>
       </div>
