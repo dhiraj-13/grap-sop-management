@@ -319,3 +319,60 @@ tr:hover td {
     width: 100%;
   }
 }
+
+/* Table responsive for mobile devices only */
+@media (max-width: 768px) {
+  .card {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  table {
+    min-width: 700px;
+  }
+  
+  th, td {
+    padding: 8px 6px;
+    font-size: 12px;
+  }
+  
+  .ra .btn {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    margin: 0 -8px;
+    padding: 0 8px;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+  
+  table {
+    min-width: 650px;
+  }
+  
+  th, td {
+    padding: 6px 4px;
+    font-size: 11px;
+  }
+  
+  .mono {
+    font-size: 10px;
+  }
+  
+  .ra .btn {
+    padding: 5px 6px;
+    font-size: 10px;
+    margin-left: 2px;
+  }
+  
+  /* Hide less critical columns on very small screens */
+  th:nth-child(6), td:nth-child(6),
+  th:nth-child(7), td:nth-child(7) {
+    display: none;
+  }
+}
