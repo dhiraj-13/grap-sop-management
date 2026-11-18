@@ -81,7 +81,8 @@ export class SopService {
     const users = this.getUsers();
     if (users.length === 0) {
       const defaultUsers = [
-        { name: 'Dhiraj Chhabria', email: 'dhiraj.chhabria@axisbank.com', role: 'Reviewer' }
+        { name: 'Dhiraj Chhabria', email: 'dhiraj.chhabria@axisbank.com', role: 'Reviewer' },
+        { name: 'Dhiraj Devani', email: 'dhiraj.devani@axisbank.com', role: 'Maker' }
       ];
       localStorage.setItem(this.USERS_KEY, JSON.stringify(defaultUsers));
     }
@@ -297,6 +298,60 @@ export class SopService {
           { timestamp: '16 Nov 2026 09:00', action: 'Modification In Progress', doneBy: 'Dhiraj Chhabria', doneByEmail: 'dhiraj.chhabria@axisbank.com', statusBefore: 'Requested Modification', statusAfter: 'Modification In Progress', version: 'v1', remarks: 'Working on waiver DOP limits' }
         ],
         comments: 'EMI bounce charges process'
+      },
+      {
+        id: 'SOP-0028',
+        n: 'KYC Verification Process',
+        v: 1,
+        c: 'Legal & Statutory',
+        s2: 'Legal Notice',
+        st: 'Draft',
+        by: 'dhiraj.devani@axisbank.com',
+        byn: 'Dhiraj Devani',
+        up: '17 Nov 2026',
+        fileName: 'KYC_Verification_v1.pdf',
+        createdAt: '17 Nov 2026',
+        hist: [
+          { timestamp: '17 Nov 2026 10:00', action: 'Created', doneBy: 'Dhiraj Devani', doneByEmail: 'dhiraj.devani@axisbank.com', statusBefore: '—', statusAfter: 'Draft', version: 'v1', remarks: '' }
+        ],
+        comments: 'KYC verification for new customers'
+      },
+      {
+        id: 'SOP-0029',
+        n: 'Account Opening Procedure',
+        v: 1,
+        c: 'Payments',
+        s2: 'UPI',
+        st: 'Submitted',
+        by: 'dhiraj.devani@axisbank.com',
+        byn: 'Dhiraj Devani',
+        up: '16 Nov 2026',
+        fileName: 'Account_Opening_v1.docx',
+        createdAt: '15 Nov 2026',
+        hist: [
+          { timestamp: '15 Nov 2026 10:00', action: 'Created', doneBy: 'Dhiraj Devani', doneByEmail: 'dhiraj.devani@axisbank.com', statusBefore: '—', statusAfter: 'Draft', version: 'v1', remarks: '' },
+          { timestamp: '16 Nov 2026 14:00', action: 'Submitted', doneBy: 'Dhiraj Devani', doneByEmail: 'dhiraj.devani@axisbank.com', statusBefore: 'Draft', statusAfter: 'Submitted', version: 'v1', remarks: '' }
+        ],
+        comments: 'New account opening process'
+      },
+      {
+        id: 'SOP-0030',
+        n: 'Fraud Detection & Reporting',
+        v: 2,
+        c: 'Cards',
+        s2: 'Credit Card Dispute',
+        st: 'Approved',
+        by: 'dhiraj.devani@axisbank.com',
+        byn: 'Dhiraj Devani',
+        up: '14 Nov 2026',
+        fileName: 'Fraud_Detection_v2.pdf',
+        createdAt: '10 Nov 2026',
+        hist: [
+          { timestamp: '10 Nov 2026 10:00', action: 'Created', doneBy: 'Dhiraj Devani', doneByEmail: 'dhiraj.devani@axisbank.com', statusBefore: '—', statusAfter: 'Draft', version: 'v1', remarks: '' },
+          { timestamp: '11 Nov 2026 14:00', action: 'Submitted', doneBy: 'Dhiraj Devani', doneByEmail: 'dhiraj.devani@axisbank.com', statusBefore: 'Draft', statusAfter: 'Submitted', version: 'v1', remarks: '' },
+          { timestamp: '14 Nov 2026 11:00', action: 'Approved', doneBy: 'Dhiraj Chhabria', doneByEmail: 'dhiraj.chhabria@axisbank.com', statusBefore: 'Submitted', statusAfter: 'Approved', version: 'v2', remarks: 'Well documented' }
+        ],
+        comments: 'Fraud detection and reporting process'
       }
     ];
     this.sopsSubject.next(mockSops);
