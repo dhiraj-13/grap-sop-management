@@ -154,7 +154,45 @@
 
 .notif-header-actions {
   display: flex;
+  align-items: center;
   gap: 8px;
+}
+
+.notif-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  color: var(--color-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.notif-close-btn:hover {
+  background: var(--color-primary-bg);
+  color: var(--color-primary-dark);
+  transform: scale(1.05);
+}
+
+.notif-close-btn:active {
+  transform: scale(0.95);
+}
+
+.notif-close-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.notif-close-btn svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2.5;
 }
 
 .btn-link {

@@ -78,6 +78,11 @@ export class AppComponent {
 
   markAllRead() {
     this.sopService.markAllNotificationsAsRead();
+    this.showNotif = false;
+  }
+
+  closeNotifications() {
+    this.showNotif = false;
   }
 
   formatNotificationTime(timestamp: string): string {
